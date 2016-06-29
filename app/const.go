@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"strings"
 	"github.com/fatih/color"
 )
 
@@ -30,6 +31,23 @@ func MakeYama() []string {
 }
 
 func ToColored(s string) string {
-	red := color.New(color.FgRed).SprintFunc()
-	return red(s)
+	if (strings.HasPrefix(s, "m")) {
+		red := color.New(color.FgRed).SprintFunc()
+		return red(s)
+	} else if (strings.HasPrefix(s, "p")) {
+		white := color.New(color.FgWhite).SprintFunc()
+		return white(s)
+	} else if (strings.HasPrefix(s, "s")) {
+		green := color.New(color.FgGreen).SprintFunc()
+		return green(s)
+	} else if (s == "発") {
+		green := color.New(color.FgGreen).SprintFunc()
+		return green(s)
+	} else if (s == "中") {
+		red := color.New(color.FgRed).SprintFunc()
+		return red(s)
+	} else {
+		white := color.New(color.FgWhite).SprintFunc()
+		return white(s)
+	}
 }
