@@ -7,6 +7,7 @@ import (
 
 func main() {
 	yama := app.MakeYama()
+	app.ShuffleYama(yama)
 	for _, hai := range yama {
 		fmt.Print(app.ToColored(hai))
 		fmt.Print(" ")
