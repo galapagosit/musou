@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/galapagosit/musou/app"
+	"github.com/galapagosit/musou/common"
+	"github.com/galapagosit/musou/server"
 )
 
 func main() {
-	yama := app.MakeYama()
-	app.ShuffleYama(yama)
+	yama := common.MakeYama()
+	server.ShuffleYama(yama)
 	for _, hai := range yama {
-		fmt.Print(app.ToColored(hai))
+		fmt.Print(common.ToColored(hai))
 		fmt.Print(" ")
 	}
 }
