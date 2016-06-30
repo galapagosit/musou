@@ -2,15 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/galapagosit/musou/common"
+	"flag"
 	"github.com/galapagosit/musou/server"
 )
 
 func main() {
-	yama := common.MakeYama()
-	server.ShuffleYama(yama)
-	for _, hai := range yama {
-		fmt.Print(common.ToColored(hai))
-		fmt.Print(" ")
+	mode := flag.String("mode", "client", "mode")
+	host := flag.String("host", "example.com", "host")
+	port := flag.Int("port", 8888, "port")
+	flag.Parse()
+
+	if *mode == "server" {
+		server.StartServer(*port)
+	} else {
+		fmt.Println("I'm client connect to " + *host)
 	}
 }
