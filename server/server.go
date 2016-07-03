@@ -2,51 +2,45 @@ package server
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"golang.org/x/net/websocket"
 	"github.com/galapagosit/musou/common"
+	"strings"
 )
 
-func makeEchoHandler() func(ws *websocket.Conn) {
+type Command struct {
+	Member *Member `json:"member"`
+	Str    string `json:"str"`
+}
+
+func recvCommand(recvChan <-chan *Command) {
 	var taku Taku;
+	for command := range recvChan {
+		if (strings.HasPrefix(command.Str, "join ")) {
+			taku.AddMember(command.Member)
+		} else {
+			taku.SaySomething(command.Member, command.Str)
+		}
+	}
+}
+
+func makeEchoHandler() func(ws *websocket.Conn) {
 	return func(ws *websocket.Conn) {
 		fmt.Println("connected!")
-		ws.Write([]byte("hello!"))
+
+		recvChan := make(chan *Command)
+		go recvCommand(recvChan)
 
 		member := &Member{ws: ws}
-		taku.AddMember(member)
-
-		var err error;
-		var written int64;
-
-		buf := make([]byte, 32 * 1024)
 		for {
-			nr, er := ws.Read(buf)
-			if nr > 0 {
-				taku.SaySomething(member, string(buf[0:nr]))
-				nw, ew := ws.Write(buf[0:nr])
-				if nw > 0 {
-					written += int64(nw)
-				}
-				if ew != nil {
-					err = ew
-					break
-				}
-				if nr != nw {
-					err = io.ErrShortWrite
-					break
-				}
-			}
-			if er == io.EOF {
+			var str string
+			if err := websocket.Message.Receive(ws, &str); err != nil {
+				fmt.Println("err: ", err)
 				break
 			}
-			if er != nil {
-				err = er
-				break
-			}
+			fmt.Println("chat receive:", str)
+			recvChan <- &Command{Member:member, Str:str}
 		}
-		fmt.Println(err)
 	}
 }
 
