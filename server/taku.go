@@ -3,10 +3,19 @@ package server
 import (
 	"fmt"
 	"golang.org/x/net/websocket"
+	"github.com/galapagosit/musou/common"
 )
 
 type Taku struct {
 	members []*Member
+	yama []string
+}
+
+func NewTaku() *Taku {
+	taku := new(Taku)
+	taku.yama = common.MakeYama()
+	ShuffleYama(taku.yama)
+	return taku
 }
 
 func (taku *Taku)AddMember(member *Member) {
@@ -19,3 +28,4 @@ func (taku *Taku)SaySomething(member *Member, str string) {
 		websocket.Message.Send(member.ws, str)
 	}
 }
+

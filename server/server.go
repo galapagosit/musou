@@ -4,58 +4,48 @@ import (
 	"fmt"
 	"net/http"
 	"golang.org/x/net/websocket"
-	"github.com/galapagosit/musou/common"
 	"strings"
 )
 
-type Command struct {
-	Member *Member `json:"member"`
-	Str    string `json:"str"`
+type MemberCommand struct {
+	Member  *Member `json:"member"`
+	Command string `json:"command"`
 }
 
-func recvCommand(recvChan <-chan *Command) {
+func recvCommand(c <-chan *MemberCommand) {
 	var taku Taku;
-	for command := range recvChan {
-		if (strings.HasPrefix(command.Str, "join ")) {
+	for command := range c {
+		if (strings.HasPrefix(command.Command, "join ")) {
 			taku.AddMember(command.Member)
 		} else {
-			taku.SaySomething(command.Member, command.Str)
+			taku.SaySomething(command.Member, command.Command)
 		}
 	}
 }
 
-func makeEchoHandler() func(ws *websocket.Conn) {
+func makeHandler() func(ws *websocket.Conn) {
+	c := make(chan *MemberCommand)
+	go recvCommand(c)
 	return func(ws *websocket.Conn) {
-		fmt.Println("connected!")
-
-		recvChan := make(chan *Command)
-		go recvCommand(recvChan)
-
+		fmt.Println("connected:", ws)
 		member := &Member{ws: ws}
 		for {
-			var str string
-			if err := websocket.Message.Receive(ws, &str); err != nil {
+			var command string
+			if err := websocket.Message.Receive(ws, &command); err != nil {
 				fmt.Println("err: ", err)
 				break
 			}
-			fmt.Println("chat receive:", str)
-			recvChan <- &Command{Member:member, Str:str}
+			fmt.Println("command receive:", member, command)
+			c <- &MemberCommand{Member:member, Command:command}
 		}
 	}
 }
 
 func StartServer(port string) {
-	yama := common.MakeYama()
-	ShuffleYama(yama)
-	for _, hai := range yama {
-		fmt.Print(common.ToColored(hai) + " ")
-	}
-	fmt.Println(port)
-
-	echoHandler := makeEchoHandler()
+	handler := makeHandler()
 	http.HandleFunc("/",
 		func(w http.ResponseWriter, req *http.Request) {
-			s := websocket.Server{Handler: websocket.Handler(echoHandler)}
+			s := websocket.Server{Handler: websocket.Handler(handler)}
 			s.ServeHTTP(w, req)
 		})
 	err := http.ListenAndServe(":" + port, nil);
