@@ -6,4 +6,5 @@ import (
 
 type Member struct {
 	ws *websocket.Conn
+	room_id string
 }

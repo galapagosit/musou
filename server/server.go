@@ -8,17 +8,29 @@ import (
 )
 
 type MemberCommand struct {
-	Member  *Member `json:"member"`
-	Command string `json:"command"`
+	Member  *Member
+	Command string
 }
 
+var takuMap = make(map[string]*Taku)
+
 func recvCommand(c <-chan *MemberCommand) {
-	var taku Taku;
 	for command := range c {
-		if (strings.HasPrefix(command.Command, "join ")) {
+		command_list := strings.Split(command.Command, " ")
+		cmd := command_list[0]
+		if (cmd == "create") {
+			room_id := command_list[1]
+			taku := NewTaku(room_id);
 			taku.AddMember(command.Member)
-		} else {
-			taku.SaySomething(command.Member, command.Command)
+			takuMap[room_id] = taku
+		} else if (cmd == "join") {
+			room_id := command_list[1]
+			taku := takuMap[room_id]
+			taku.AddMember(command.Member)
+		} else if (cmd == "say") {
+			taku := takuMap[command.Member.room_id]
+			message := command_list[1]
+			taku.SaySomething(command.Member, message)
 		}
 	}
 }

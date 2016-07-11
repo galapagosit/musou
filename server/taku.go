@@ -7,23 +7,27 @@ import (
 )
 
 type Taku struct {
+	room_id string
 	members []*Member
-	yama []string
+	yama    []string
 }
 
-func NewTaku() *Taku {
+func NewTaku(room_id string) *Taku {
 	taku := new(Taku)
+	taku.room_id = room_id
 	taku.yama = common.MakeYama()
 	ShuffleYama(taku.yama)
 	return taku
 }
 
 func (taku *Taku)AddMember(member *Member) {
+	fmt.Println("member add:", member)
 	taku.members = append(taku.members, member)
+	member.room_id = taku.room_id
 }
 
 func (taku *Taku)SaySomething(member *Member, str string) {
-	fmt.Println(member, "say", str)
+	fmt.Println("member say:", member, str)
 	for _, member := range taku.members {
 		websocket.Message.Send(member.ws, str)
 	}
