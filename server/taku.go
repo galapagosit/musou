@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"golang.org/x/net/websocket"
 	"github.com/galapagosit/musou/common"
+	"strconv"
 )
 
 type Taku struct {
@@ -24,6 +25,10 @@ func (taku *Taku)AddMember(member *Member) {
 	fmt.Println("member add:", member)
 	taku.members = append(taku.members, member)
 	member.room_id = taku.room_id
+	message := "room_id:" + taku.room_id + " count:" + strconv.Itoa(len(taku.members))
+	for _, member := range taku.members {
+		websocket.Message.Send(member.ws, message)
+	}
 }
 
 func (taku *Taku)SaySomething(member *Member, str string) {
