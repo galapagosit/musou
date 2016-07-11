@@ -5,6 +5,7 @@ import (
 	"golang.org/x/net/websocket"
 	"github.com/galapagosit/musou/common"
 	"strconv"
+	"strings"
 )
 
 type Taku struct {
@@ -29,6 +30,9 @@ func (taku *Taku)AddMember(member *Member) {
 	for _, member := range taku.members {
 		websocket.Message.Send(member.ws, message)
 	}
+	if(len(taku.members) >= 3){
+		taku.Haipai()
+	}
 }
 
 func (taku *Taku)SaySomething(member *Member, str string) {
@@ -38,3 +42,16 @@ func (taku *Taku)SaySomething(member *Member, str string) {
 	}
 }
 
+func (taku *Taku)Tumo(num int) []string{
+	var tumos []string
+	tumos, taku.yama = taku.yama[:num], taku.yama[num:]
+	fmt.Println("remain yama:", strconv.Itoa(len(taku.yama)))
+	return tumos
+}
+
+func (taku *Taku)Haipai() {
+	for _, member := range taku.members {
+		tumos := taku.Tumo(13)
+		websocket.Message.Send(member.ws, strings.Join(tumos, " "))
+	}
+}
