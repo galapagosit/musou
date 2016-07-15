@@ -38,7 +38,6 @@ func NewTaku(room_id string) *Taku {
 	taku := new(Taku)
 	taku.room_id = room_id
 	taku.yama = common.MakeYama()
-	Shuffle(taku.yama)
 	return taku
 }
 
@@ -65,6 +64,7 @@ func (taku *Taku)SaySomething(member *Member, str string) {
 }
 
 func (taku *Taku)Start() {
+	Shuffle(taku.yama)
 	Shuffle(taku.members)
 	taku.Haipai()
 }
