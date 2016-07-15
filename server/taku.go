@@ -8,17 +8,37 @@ import (
 	"strings"
 )
 
+type yama []string
+
+func (p yama) Len() int {
+	return len(p)
+}
+
+func (p yama) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
+type members []*Member
+
+func (p members) Len() int {
+	return len(p)
+}
+
+func (p members) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
 type Taku struct {
 	room_id string
-	members []*Member
-	yama    []string
+	members members
+	yama    yama
 }
 
 func NewTaku(room_id string) *Taku {
 	taku := new(Taku)
 	taku.room_id = room_id
 	taku.yama = common.MakeYama()
-	ShuffleYama(taku.yama)
+	Shuffle(taku.yama)
 	return taku
 }
 
@@ -32,9 +52,8 @@ func (taku *Taku)AddMember(member *Member) {
 	}
 
 	// メンツが揃った
-	if (len(taku.members) >= 3) {
-		taku.Oyagime()
-		taku.Haipai()
+	if (len(taku.members) >= 2) {
+		taku.Start()
 	}
 }
 
@@ -45,11 +64,9 @@ func (taku *Taku)SaySomething(member *Member, str string) {
 	}
 }
 
-func (taku *Taku)Oyagime() {
-	for i := range taku.members {
-		j := GetRandInt(i + 1)
-		taku.members[i], taku.members[j] = taku.members[j], taku.members[i]
-	}
+func (taku *Taku)Start() {
+	Shuffle(taku.members)
+	taku.Haipai()
 }
 
 func (taku *Taku)Tumo(num int) []string {
