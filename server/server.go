@@ -27,10 +27,9 @@ func recvCommand(c <-chan *MemberCommand) {
 			room_id := command_list[1]
 			taku := takuMap[room_id]
 			taku.AddMember(command.Member)
-		} else if (cmd == "say") {
+		} else {
 			taku := takuMap[command.Member.room_id]
-			message := command_list[1]
-			taku.SaySomething(command.Member, message)
+			taku.c <- command
 		}
 	}
 }

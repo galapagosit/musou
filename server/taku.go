@@ -8,6 +8,17 @@ import (
 	"strings"
 )
 
+func recvTakuCommand(taku *Taku) {
+	for command := range taku.c {
+		command_list := strings.Split(command.Command, " ")
+		cmd := command_list[0]
+		if (cmd == "say") {
+			message := command_list[1]
+			taku.SaySomething(command.Member, message)
+		}
+	}
+}
+
 type yama []string
 
 func (p yama) Len() int {
@@ -32,12 +43,16 @@ type Taku struct {
 	room_id string
 	members members
 	yama    yama
+	c chan *MemberCommand
 }
 
 func NewTaku(room_id string) *Taku {
 	taku := new(Taku)
 	taku.room_id = room_id
 	taku.yama = common.MakeYama()
+	taku.c = make(chan *MemberCommand)
+
+	go recvTakuCommand(taku)
 	return taku
 }
 
