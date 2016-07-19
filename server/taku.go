@@ -6,6 +6,7 @@ import (
 	C "github.com/galapagosit/musou/common"
 	"strconv"
 	"strings"
+	"encoding/json"
 )
 
 func recvTakuCommand(taku *Taku) {
@@ -137,6 +138,15 @@ func (taku *Taku)Haipai() {
 	}
 }
 
+type Stat struct {
+	Kaze              string `json:"kaze"`
+	Tehai             []C.Hai `json:"tehai"`
+	Tumohai           C.Hai `json:"tumohai"`
+	Sutehai           map[string][]Sutehai  `json:"sutehai"`
+	Turn_member_index turn_member_index `json:"turn_member_index"`
+	Phase             int `json:"phase"`
+}
+
 func (taku *Taku)SendStat(member *Member) {
 	var kaze string
 
@@ -151,26 +161,26 @@ func (taku *Taku)SendStat(member *Member) {
 	} else if (index == 3) {
 		kaze = "北"
 	}
-	websocket.Message.Send(member.ws, "風:" + kaze)
 
-	websocket.Message.Send(member.ws, "---tehai---")
-	tehai := taku.tehai_map[index]
-	websocket.Message.Send(member.ws, strings.Join(C.HaisToStrings(tehai), " "))
+	stat := new(Stat)
 
-	websocket.Message.Send(member.ws, "---tumohai---")
-	tsumohai := taku.tsumohai_map[index]
-	websocket.Message.Send(member.ws, tsumohai)
-
-	websocket.Message.Send(member.ws, "---sutehai---")
-	for _, m := range taku.members {
-		m_index := taku.GetMemberIndex(m)
-		var m_sutehai_list []C.Hai
-		for _, sutehai := range taku.sutehai_map[m_index] {
-			m_sutehai_list = append(m_sutehai_list, sutehai.hai)
-		}
-		websocket.Message.Send(member.ws, fmt.Sprintf(">>> %d", m_index))
-		websocket.Message.Send(member.ws, strings.Join(C.HaisToStrings(m_sutehai_list), " "))
+	stat.Kaze = kaze
+	stat.Tehai = taku.tehai_map[index]
+	stat.Tumohai = taku.tsumohai_map[index]
+	sutehai := make(map[string][]Sutehai)
+	for k, v := range taku.sutehai_map{
+		sutehai[string(k)] = v
 	}
+	stat.Sutehai = sutehai
+
+	stat.Turn_member_index = taku.turn_member_index
+	stat.Phase = taku.phase
+
+	b, err := json.Marshal(stat)
+	if err != nil {
+		panic(err)
+	}
+	websocket.Message.Send(member.ws, string(b))
 }
 
 func (taku *Taku)SendStats() {
