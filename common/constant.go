@@ -8,6 +8,11 @@ import (
 
 type Hai string
 
+const (
+	PHASE_TUMO int = iota
+	PHASE_WAIT
+)
+
 func HaisToStrings(hais []Hai) []string {
 	var strings []string;
 	for _, hai := range(hais){

@@ -40,26 +40,19 @@ func (p members) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
 
-const (
-	PHASE_TUMO int = iota
-	PHASE_WAIT
-)
-
 type Sutehai struct {
 	hai         C.Hai
 	is_tumogiri bool
 }
 
-type turn_member_index int
-
 type Taku struct {
 	room_id           string
 	members           members
 	yama              yama
-	tehai_map         map[turn_member_index][]C.Hai
-	tsumohai_map      map[turn_member_index]C.Hai
-	sutehai_map       map[turn_member_index][]Sutehai
-	turn_member_index turn_member_index
+	tehai_map         map[int][]C.Hai
+	tsumohai_map      map[int]C.Hai
+	sutehai_map       map[int][]Sutehai
+	turn_member_index int
 	phase             int
 	c                 chan *MemberCommand
 }
@@ -100,10 +93,10 @@ func (taku *Taku)Start() {
 	Shuffle(taku.yama)
 	Shuffle(taku.members)
 	taku.turn_member_index = 0
-	taku.phase = PHASE_WAIT
-	taku.tehai_map = make(map[turn_member_index][]C.Hai)
-	taku.tsumohai_map = make(map[turn_member_index]C.Hai)
-	taku.sutehai_map = make(map[turn_member_index][]Sutehai)
+	taku.phase = C.PHASE_WAIT
+	taku.tehai_map = make(map[int][]C.Hai)
+	taku.tsumohai_map = make(map[int]C.Hai)
+	taku.sutehai_map = make(map[int][]Sutehai)
 
 	taku.Haipai()
 	taku.Tumo()
@@ -115,10 +108,10 @@ func (taku *Taku)Tumo() {
 	taku.tsumohai_map[taku.turn_member_index] = tumos[0]
 }
 
-func (taku *Taku)GetMemberIndex(member *Member) turn_member_index {
+func (taku *Taku)GetMemberIndex(member *Member) int {
 	for i, m := range taku.members {
 		if (m == member) {
-			return turn_member_index(i)
+			return i
 		}
 	}
 	panic("can detect index")
@@ -138,15 +131,6 @@ func (taku *Taku)Haipai() {
 	}
 }
 
-type Stat struct {
-	Kaze              string `json:"kaze"`
-	Tehai             []C.Hai `json:"tehai"`
-	Tumohai           C.Hai `json:"tumohai"`
-	Sutehai           map[string][]Sutehai  `json:"sutehai"`
-	Turn_member_index turn_member_index `json:"turn_member_index"`
-	Phase             int `json:"phase"`
-}
-
 func (taku *Taku)SendStat(member *Member) {
 	var kaze string
 
@@ -162,14 +146,18 @@ func (taku *Taku)SendStat(member *Member) {
 		kaze = "北"
 	}
 
-	stat := new(Stat)
+	stat := new(C.Stat)
 
 	stat.Kaze = kaze
 	stat.Tehai = taku.tehai_map[index]
 	stat.Tumohai = taku.tsumohai_map[index]
-	sutehai := make(map[string][]Sutehai)
+	sutehai := make(map[string][]C.Sutehai)
 	for k, v := range taku.sutehai_map{
-		sutehai[string(k)] = v
+		hais := []C.Sutehai{}
+		for _, s := range v {
+			hais = append(hais, C.Sutehai{Hai:s.hai, Is_tumogiri:s.is_tumogiri})
+		}
+		sutehai[string(k)] = hais
 	}
 	stat.Sutehai = sutehai
 
