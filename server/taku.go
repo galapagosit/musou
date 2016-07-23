@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"golang.org/x/net/websocket"
 	C "github.com/galapagosit/musou/common"
-	"strconv"
 	"strings"
 	"encoding/json"
+	"strconv"
 )
 
 func recvTakuCommand(taku *Taku) {
@@ -71,10 +71,10 @@ func (taku *Taku)AddMember(member *Member) {
 	fmt.Println("member add:", member)
 	taku.members = append(taku.members, member)
 	member.room_id = taku.room_id
-	message := "room_id:" + taku.room_id + " count:" + strconv.Itoa(len(taku.members))
-	for _, member := range taku.members {
-		websocket.Message.Send(member.ws, message)
-	}
+	//message := "room_id:" + taku.room_id + " count:" + strconv.Itoa(len(taku.members))
+	//for _, member := range taku.members {
+	//	websocket.Message.Send(member.ws, message)
+	//}
 
 	// メンツが揃った
 	if (len(taku.members) >= 2) {
@@ -97,6 +97,9 @@ func (taku *Taku)Start() {
 	taku.tehai_map = make(map[int][]C.Hai)
 	taku.tsumohai_map = make(map[int]C.Hai)
 	taku.sutehai_map = make(map[int][]Sutehai)
+	for i, _ := range taku.members {
+		taku.sutehai_map[i] = make([]Sutehai, 0)
+	}
 
 	taku.Haipai()
 	taku.Tumo()
@@ -157,7 +160,7 @@ func (taku *Taku)SendStat(member *Member) {
 		for _, s := range v {
 			hais = append(hais, C.Sutehai{Hai:s.hai, Is_tumogiri:s.is_tumogiri})
 		}
-		sutehai[string(k)] = hais
+		sutehai[strconv.Itoa(k)] = hais
 	}
 	stat.Sutehai = sutehai
 

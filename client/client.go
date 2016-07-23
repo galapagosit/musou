@@ -5,15 +5,26 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+	"encoding/json"
+	C "github.com/galapagosit/musou/common"
 )
+
+
+func recv(stat_str string) {
+	var stat C.Stat
+	err := json.Unmarshal([]byte(stat_str), &stat)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(&stat)
+}
 
 func reactor(ws *websocket.Conn, recv_c <-chan string, input_c <-chan string) {
 	for {
 		select {
-		case recv := <-recv_c:
-			fmt.Println("recv: ", recv)
+		case stat_str := <-recv_c:
+			recv(stat_str)
 		case input := <-input_c:
-			fmt.Println("input: ", input)
 			if _, err := ws.Write([]byte(input)); err != nil {
 				panic("Write: " + err.Error())
 			}

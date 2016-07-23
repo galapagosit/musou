@@ -16,7 +16,7 @@ const (
 func HaisToStrings(hais []Hai) []string {
 	var strings []string;
 	for _, hai := range(hais){
-		strings = append(strings, string(hai))
+		strings = append(strings, ToColored(hai))
 	}
 	return strings
 }
