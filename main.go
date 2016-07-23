@@ -3,8 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/galapagosit/musou/server"
 	"github.com/galapagosit/musou/client"
+	"github.com/galapagosit/musou/server"
 )
 
 func main() {
