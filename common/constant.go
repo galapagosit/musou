@@ -9,8 +9,7 @@ import (
 type Hai string
 
 const (
-	PHASE_TUMO int = iota
-	PHASE_WAIT
+	MASKED_HAI Hai = "XX"
 )
 
 func HaisToStrings(hais []Hai) []string {

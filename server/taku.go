@@ -40,20 +40,16 @@ func (p members) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
 
-type Sutehai struct {
-	hai         C.Hai
-	is_tumogiri bool
-}
-
 type Taku struct {
 	room_id           string
 	members           members
 	yama              yama
 	tehai_map         map[int][]C.Hai
+	sutehai_map       map[int][]C.Sutehai
 	tsumohai_map      map[int]C.Hai
-	sutehai_map       map[int][]Sutehai
+	dahai_map         map[int]C.Hai
 	turn_member_index int
-	phase             int
+	can_tumo          bool
 	c                 chan *MemberCommand
 }
 
@@ -93,12 +89,16 @@ func (taku *Taku)Start() {
 	Shuffle(taku.yama)
 	Shuffle(taku.members)
 	taku.turn_member_index = 0
-	taku.phase = C.PHASE_WAIT
+	taku.can_tumo = false
 	taku.tehai_map = make(map[int][]C.Hai)
+	taku.sutehai_map = make(map[int][]C.Sutehai)
 	taku.tsumohai_map = make(map[int]C.Hai)
-	taku.sutehai_map = make(map[int][]Sutehai)
+	taku.dahai_map = make(map[int]C.Hai)
 	for i, _ := range taku.members {
-		taku.sutehai_map[i] = make([]Sutehai, 0)
+		taku.tehai_map[i] = make([]C.Hai, 0)
+		taku.sutehai_map[i] = make([]C.Sutehai, 0)
+		taku.tsumohai_map[i] = ""
+		taku.dahai_map[i] = ""
 	}
 
 	taku.Haipai()
@@ -152,20 +152,42 @@ func (taku *Taku)SendStat(member *Member) {
 	stat := new(C.Stat)
 
 	stat.Kaze = kaze
-	stat.Tehai = taku.tehai_map[index]
-	stat.Tumohai = taku.tsumohai_map[index]
-	sutehai := make(map[string][]C.Sutehai)
-	for k, v := range taku.sutehai_map{
-		hais := []C.Sutehai{}
-		for _, s := range v {
-			hais = append(hais, C.Sutehai{Hai:s.hai, Is_tumogiri:s.is_tumogiri})
+
+	stat.Tehai_map = make(map[string][]C.Hai)
+	for k, v := range taku.tehai_map {
+		if (k == index){
+			stat.Tehai_map[strconv.Itoa(k)] = v
+		}else{
+			// mask
+			tehai := []C.Hai{}
+			for i := 0; i < len(v); i++ {
+				tehai = append(tehai, C.MASKED_HAI)
+			}
+			stat.Tehai_map[strconv.Itoa(k)] = tehai
 		}
-		sutehai[strconv.Itoa(k)] = hais
 	}
-	stat.Sutehai = sutehai
+
+	stat.Sutehai_map =make(map[string][]C.Sutehai)
+	for k, v := range taku.sutehai_map{
+		stat.Sutehai_map[strconv.Itoa(k)] = v
+	}
+
+	stat.Tsumohai_map = make(map[string]C.Hai)
+	for k, v := range taku.tsumohai_map{
+		if (k == index){
+			stat.Tsumohai_map[strconv.Itoa(k)] = v
+		}else{
+			stat.Tsumohai_map[strconv.Itoa(k)] = C.MASKED_HAI
+		}
+	}
+
+	stat.Dahai_map =make(map[string]C.Hai)
+	for k, v := range taku.dahai_map{
+		stat.Dahai_map[strconv.Itoa(k)] = v
+	}
 
 	stat.Turn_member_index = taku.turn_member_index
-	stat.Phase = taku.phase
+	stat.Can_tumo = taku.can_tumo
 
 	b, err := json.Marshal(stat)
 	if err != nil {
