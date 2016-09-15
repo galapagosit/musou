@@ -10,6 +10,7 @@ type Hai string
 
 const (
 	MASKED_HAI Hai = "XX"
+	NO_HAI Hai = "--"
 )
 
 func HaisToStrings(hais []Hai) []string {

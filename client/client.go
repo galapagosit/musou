@@ -9,7 +9,6 @@ import (
 	C "github.com/galapagosit/musou/common"
 )
 
-
 func recv(stat_str string) {
 	var stat C.Stat
 	err := json.Unmarshal([]byte(stat_str), &stat)

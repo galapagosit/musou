@@ -89,7 +89,7 @@ func (taku *Taku)Start() {
 	Shuffle(taku.yama)
 	Shuffle(taku.members)
 	taku.turn_member_index = 0
-	taku.can_tumo = false
+	taku.can_tumo = true
 	taku.tehai_map = make(map[int][]C.Hai)
 	taku.sutehai_map = make(map[int][]C.Sutehai)
 	taku.tsumohai_map = make(map[int]C.Hai)
@@ -109,6 +109,7 @@ func (taku *Taku)Start() {
 func (taku *Taku)Tumo() {
 	tumos := taku.PopHai(1)
 	taku.tsumohai_map[taku.turn_member_index] = tumos[0]
+	taku.can_tumo = false
 }
 
 func (taku *Taku)GetMemberIndex(member *Member) int {
@@ -167,17 +168,22 @@ func (taku *Taku)SendStat(member *Member) {
 		}
 	}
 
-	stat.Sutehai_map =make(map[string][]C.Sutehai)
+	stat.Sutehai_map = make(map[string][]C.Sutehai)
 	for k, v := range taku.sutehai_map{
 		stat.Sutehai_map[strconv.Itoa(k)] = v
 	}
 
 	stat.Tsumohai_map = make(map[string]C.Hai)
+	fmt.Println("member:", member)
 	for k, v := range taku.tsumohai_map{
-		if (k == index){
-			stat.Tsumohai_map[strconv.Itoa(k)] = v
+		if (v != ""){
+			if (k == index){
+				stat.Tsumohai_map[strconv.Itoa(k)] = v
+			}else{
+				stat.Tsumohai_map[strconv.Itoa(k)] = C.MASKED_HAI
+			}
 		}else{
-			stat.Tsumohai_map[strconv.Itoa(k)] = C.MASKED_HAI
+			stat.Tsumohai_map[strconv.Itoa(k)] = C.NO_HAI
 		}
 	}
 
