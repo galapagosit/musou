@@ -174,7 +174,6 @@ func (taku *Taku)SendStat(member *Member) {
 	}
 
 	stat.Tsumohai_map = make(map[string]C.Hai)
-	fmt.Println("member:", member)
 	for k, v := range taku.tsumohai_map{
 		if (v != ""){
 			if (k == index){
