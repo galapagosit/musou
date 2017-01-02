@@ -78,6 +78,25 @@ func (taku *Taku)AddMember(member *Member) {
 	}
 }
 
+func (taku *Taku)SuteHai(member *Member, hai_index int) {
+	fmt.Println("sute hai add:", member, hai_index)
+	index := taku.GetMemberIndex(member)
+
+	taku.tehai_map[index] = append(taku.tehai_map[index], taku.tsumohai_map[index])
+	hai := taku.tehai_map[index][hai_index]
+	sutehai := new(C.Sutehai)
+	sutehai.Hai = hai
+	if (hai_index == 14){
+		sutehai.Is_tumogiri = true
+	}else{
+		sutehai.Is_tumogiri = false
+	}
+	taku.sutehai_map[index] = append(taku.sutehai_map[index], *sutehai)
+	taku.tehai_map[index] = append(taku.tehai_map[index][:hai_index], taku.tehai_map[index][hai_index + 1:]...)
+	tsumohai := new(C.Hai)
+	taku.tsumohai_map[index] = *tsumohai
+}
+
 func (taku *Taku)SaySomething(member *Member, str string) {
 	fmt.Println("member say:", member, str)
 	for _, member := range taku.members {

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"golang.org/x/net/websocket"
 	"strings"
+	"strconv"
 )
 
 type MemberCommand struct {
@@ -27,6 +28,11 @@ func recvCommand(c <-chan *MemberCommand) {
 			room_id := command_list[1]
 			taku := takuMap[room_id]
 			taku.AddMember(command.Member)
+		} else if (cmd == "sute") {
+			hai_index := command_list[1]
+			index, _ := strconv.Atoi(hai_index)
+			taku := takuMap[command.Member.room_id]
+			taku.SuteHai(command.Member, index)
 		} else {
 			taku := takuMap[command.Member.room_id]
 			taku.c <- command
